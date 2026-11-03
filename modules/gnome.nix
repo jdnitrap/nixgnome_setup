@@ -4,6 +4,8 @@
 
 {
   services.xserver.enable = true;
+  # xserver installs XTerm and its launcher unless it is excluded.
+  services.xserver.excludePackages = [ pkgs.xterm ];
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
 
@@ -54,6 +56,7 @@ EOF
         rygel
         xdg-user-dirs-gtk
         system-config-printer
+        cups
       ];
     } ''
       mkdir -p "$out/share/applications"
@@ -96,4 +99,36 @@ EOF
 
   # Terminal=true desktop files and GLib terminal launches use this instead of Console.
   xdg.terminal-exec.enable = true;
+
+  # GNOME Shell's wrapper puts its own share directory ahead of the system
+  # path, so the real Extensions launcher wins over a hidden copy there.
+  # A file in each user's data directory is checked first and removes it.
+  systemd.user.services.gnome-hide-launchers = {
+    description = "Hide system launchers from the GNOME app grid";
+    wantedBy = [ "graphical-session-pre.target" ];
+    before = [ "graphical-session-pre.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      dir="$HOME/.local/share/applications"
+      mkdir -p "$dir"
+      for name in \
+        org.gnome.Extensions.desktop \
+        org.gnome.Shell.Extensions.desktop \
+        cups.desktop \
+        system-config-printer.desktop \
+        gnome-printers-panel.desktop \
+        xterm.desktop
+      do
+        cat > "$dir/$name" <<EOF
+      [Desktop Entry]
+      Type=Application
+      Hidden=true
+      NoDisplay=true
+      EOF
+      done
+    '';
+  };
 }
