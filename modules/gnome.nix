@@ -18,8 +18,8 @@
   ];
 
   # The Extensions command ships inside GNOME Shell. Refuse it for every account.
-  # Every system launcher except Software is hidden. Settings stays in the
-  # top-bar menu, and its panels still hold the system services.
+  # Software and Settings stay in the app grid. Other system launchers are
+  # hidden, and their panels stay inside Settings.
   environment.systemPackages = [
     (lib.hiPrio (pkgs.runCommand "gnome-extensions-disabled" { } ''
       mkdir -p $out/bin $out/share/dbus-1/services
@@ -64,7 +64,7 @@ EOF
           [ -e "$f" ] || continue
           base=$(basename "$f")
           case "$base" in
-            org.gnome.Software.desktop) continue ;;
+            org.gnome.Software.desktop|org.gnome.Settings.desktop) continue ;;
           esac
           awk '
             /^\[Desktop Entry\]/ { print; print "NoDisplay=true"; print "Hidden=true"; next }
