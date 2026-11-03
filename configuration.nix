@@ -22,7 +22,6 @@
     ./modules/laptop.nix
     ./modules/apparmor.nix
     ./modules/apparmor-gui.nix
-    ./modules/auto-login.nix
     ./modules/adguard.nix
   ];
 

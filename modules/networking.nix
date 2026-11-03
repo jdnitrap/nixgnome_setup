@@ -21,7 +21,7 @@
 
   # NixOS firewall.
   networking.firewall.enable = true;
-  # Required for Proton VPN and other WireGuard clients.
-  networking.firewall.checkReversePath = false;
+  # Loose mode keeps a VPN working. Packets that match no route are still dropped.
+  networking.firewall.checkReversePath = "loose";
 
 }
