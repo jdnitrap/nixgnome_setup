@@ -156,7 +156,9 @@ in
     Icon=security-high
     Terminal=false
     Categories=System;Security;
-    StartupNotify=true
+    StartupNotify=true;
+    NoDisplay=true;
+    Hidden=true;
   '';
 
   systemd.user.services.apparmor-dashboard = {

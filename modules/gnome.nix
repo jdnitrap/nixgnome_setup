@@ -17,29 +17,62 @@
     gnome-shell-extensions
   ];
 
-  # The Extensions icon and command ship inside GNOME Shell. Hide the
-  # launcher and put a refusal in front of the command for every account.
+  # The Extensions command ships inside GNOME Shell. Refuse it for every account.
+  # Every system launcher except Software is hidden. Settings stays in the
+  # top-bar menu, and its panels still hold the system services.
   environment.systemPackages = [
     (lib.hiPrio (pkgs.runCommand "gnome-extensions-disabled" { } ''
-      mkdir -p $out/bin $out/share/applications $out/share/dbus-1/services
+      mkdir -p $out/bin $out/share/dbus-1/services
       cat > $out/bin/gnome-extensions-app <<'EOF'
 #!/bin/sh
 echo "The Extensions app is disabled." >&2
 exit 1
 EOF
       chmod 0555 $out/bin/gnome-extensions-app
-      cat > $out/share/applications/org.gnome.Extensions.desktop <<'EOF'
-[Desktop Entry]
-Type=Application
-Name=Extensions
-NoDisplay=true
-Hidden=true
-EOF
       cat > $out/share/dbus-1/services/org.gnome.Extensions.service <<EOF
 [D-BUS Service]
 Name=org.gnome.Extensions
 Exec=$out/bin/gnome-extensions-app
 EOF
+    ''))
+
+    (lib.hiPrio (pkgs.runCommand "gnome-grid-software-only" {
+      paths = with pkgs; [
+        gnome-shell
+        gnome-control-center
+        gnome-software
+        gnome-color-manager
+        gnome-remote-desktop
+        gnome-browser-connector
+        gnome-initial-setup
+        gnome-bluetooth
+        gnome-keyring
+        gnome-settings-daemon
+        gnome-session
+        orca
+        ibus
+        rygel
+        xdg-user-dirs-gtk
+        system-config-printer
+      ];
+    } ''
+      mkdir -p "$out/share/applications"
+      for p in $paths; do
+        dir="$p/share/applications"
+        [ -d "$dir" ] || continue
+        for f in "$dir"/*.desktop; do
+          [ -e "$f" ] || continue
+          base=$(basename "$f")
+          case "$base" in
+            org.gnome.Software.desktop) continue ;;
+          esac
+          awk '
+            /^\[Desktop Entry\]/ { print; print "NoDisplay=true"; print "Hidden=true"; next }
+            /^NoDisplay=/ || /^Hidden=/ { next }
+            { print }
+          ' "$f" > "$out/share/applications/$base"
+        done
+      done
     ''))
   ];
 
