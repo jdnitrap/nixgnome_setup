@@ -26,8 +26,10 @@
     ./modules/adguard.nix
   ];
 
-  # Set networking.hostName on the machine. It is not stored in this repo.
-  # hardware-configuration.nix stays on the machine too.
+  # Replace this after you clone the repo onto a machine.
+  networking.hostName = "hostname";
+
+  # hardware-configuration.nix stays on the machine.
 
   # GNOME stays the default login session.
   services.displayManager.defaultSession = lib.mkForce "gnome";
