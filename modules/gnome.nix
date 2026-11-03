@@ -17,15 +17,29 @@
     gnome-shell-extensions
   ];
 
-  # The Extensions icon is built into GNOME Shell. Replace its launcher so
-  # the app grid hides it for every account.
+  # The Extensions icon and command ship inside GNOME Shell. Hide the
+  # launcher and put a refusal in front of the command for every account.
   environment.systemPackages = [
-    (lib.hiPrio (pkgs.writeTextDir "share/applications/org.gnome.Extensions.desktop" ''
-      [Desktop Entry]
-      Type=Application
-      Name=Extensions
-      NoDisplay=true
-      Hidden=true
+    (lib.hiPrio (pkgs.runCommand "gnome-extensions-disabled" { } ''
+      mkdir -p $out/bin $out/share/applications $out/share/dbus-1/services
+      cat > $out/bin/gnome-extensions-app <<'EOF'
+#!/bin/sh
+echo "The Extensions app is disabled." >&2
+exit 1
+EOF
+      chmod 0555 $out/bin/gnome-extensions-app
+      cat > $out/share/applications/org.gnome.Extensions.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Extensions
+NoDisplay=true
+Hidden=true
+EOF
+      cat > $out/share/dbus-1/services/org.gnome.Extensions.service <<EOF
+[D-BUS Service]
+Name=org.gnome.Extensions
+Exec=$out/bin/gnome-extensions-app
+EOF
     ''))
   ];
 
