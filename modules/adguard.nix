@@ -74,6 +74,24 @@
           name = "NoCoin Filter List";
           url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_8.txt";
         }
+        {
+          enabled = true;
+          id = 7;
+          name = "Phishing Army";
+          url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_18.txt";
+        }
+        {
+          enabled = true;
+          id = 8;
+          name = "Scam Blocklist by DurableNapkin";
+          url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_10.txt";
+        }
+        {
+          enabled = true;
+          id = 9;
+          name = "Stalkerware Indicators List";
+          url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_31.txt";
+        }
       ];
 
       # Public resolver names only. A browser that cannot open its own
