@@ -1,0 +1,37 @@
+#configuration.nix
+
+{ config, pkgs, lib, ... }:
+
+{
+  imports = [
+    ./hardware-configuration.nix
+    ./modules/hardware-support.nix
+    ./modules/printer-scanner.nix
+    ./modules/system-setup.nix
+    ./modules/sound.nix
+    ./modules/state-version.nix
+    ./modules/system-packages.nix
+    ./modules/gnome.nix
+    ./modules/boot.nix
+    ./modules/networking.nix
+    ./modules/bluetooth.nix
+    ./modules/user-accounts.nix
+    ./modules/flatpak.nix
+    ./modules/auto-update.nix
+    ./modules/experimental-features.nix
+    ./modules/laptop.nix
+    ./modules/apparmor.nix
+    ./modules/apparmor-gui.nix
+    ./modules/auto-login.nix
+    ./modules/adguard.nix
+  ];
+
+  # Set networking.hostName on the machine. It is not stored in this repo.
+  # hardware-configuration.nix stays on the machine too.
+
+  # GNOME stays the default login session.
+  services.displayManager.defaultSession = lib.mkForce "gnome";
+
+  # GNOME gets the SSH password prompt.
+  programs.ssh.askPassword = lib.mkForce "${pkgs.seahorse}/libexec/seahorse/ssh-askpass";
+}
