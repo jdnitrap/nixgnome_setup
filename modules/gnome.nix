@@ -17,6 +17,18 @@
     gnome-shell-extensions
   ];
 
+  # The Extensions icon is built into GNOME Shell. Replace its launcher so
+  # the app grid hides it for every account.
+  environment.systemPackages = [
+    (lib.hiPrio (pkgs.writeTextDir "share/applications/org.gnome.Extensions.desktop" ''
+      [Desktop Entry]
+      Type=Application
+      Name=Extensions
+      NoDisplay=true
+      Hidden=true
+    ''))
+  ];
+
   # GNOME hides Log Out with one account and one session. Show it anyway.
   programs.dconf.profiles.user.databases = [{
     settings."org/gnome/shell".always-show-log-out = true;
