@@ -114,12 +114,14 @@ EOF
     script = ''
       dir="$HOME/.local/share/applications"
       mkdir -p "$dir"
+      # cups.desktop is the CUPS web icon. system-config-printer.desktop is
+      # the Print Settings app. gnome-printers-panel.desktop is the Settings
+      # row, so it is not listed here.
       for name in \
         org.gnome.Extensions.desktop \
         org.gnome.Shell.Extensions.desktop \
         cups.desktop \
         system-config-printer.desktop \
-        gnome-printers-panel.desktop \
         xterm.desktop
       do
         cat > "$dir/$name" <<EOF
