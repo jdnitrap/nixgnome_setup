@@ -69,11 +69,22 @@ EOF
           case "$base" in
             org.gnome.Software.desktop|org.gnome.Settings.desktop) continue ;;
           esac
-          awk '
-            /^\[Desktop Entry\]/ { print; print "NoDisplay=true"; print "Hidden=true"; next }
-            /^NoDisplay=/ || /^Hidden=/ { next }
-            { print }
-          ' "$f" > "$out/share/applications/$base"
+          # Settings loads gnome-*-panel.desktop by name. Hidden makes that
+          # lookup fail, so the row is dropped. NoDisplay only keeps the
+          # launcher out of the app grid.
+          if grep -q 'X-GNOME-Settings-Panel' "$f"; then
+            awk '
+              /^\[Desktop Entry\]/ { print; print "NoDisplay=true"; next }
+              /^NoDisplay=/ { next }
+              { print }
+            ' "$f" > "$out/share/applications/$base"
+          else
+            awk '
+              /^\[Desktop Entry\]/ { print; print "NoDisplay=true"; print "Hidden=true"; next }
+              /^NoDisplay=/ || /^Hidden=/ { next }
+              { print }
+            ' "$f" > "$out/share/applications/$base"
+          fi
         done
       done
     ''))
@@ -114,9 +125,10 @@ EOF
     script = ''
       dir="$HOME/.local/share/applications"
       mkdir -p "$dir"
+      # An older generation replaced the Printers row with a Hidden stub.
+      rm -f "$dir/gnome-printers-panel.desktop"
       # cups.desktop is the CUPS web icon. system-config-printer.desktop is
-      # the Print Settings app. gnome-printers-panel.desktop is the Settings
-      # row, so it is not listed here.
+      # the Print Settings app.
       for name in \
         org.gnome.Extensions.desktop \
         org.gnome.Shell.Extensions.desktop \
