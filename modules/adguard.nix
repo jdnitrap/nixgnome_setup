@@ -18,16 +18,22 @@
           "::1"
         ];
         port = 53;
+        # Resolver IPs, not hostnames. Proton times out DoH to
+        # dns.quad9.net / cloudflare-dns.com and takes down all DNS.
+        # DoH-by-IP stays encrypted; plain IP DNS is the fallback.
         upstream_dns = [
-          "https://dns.quad9.net/dns-query"
+          "https://9.9.9.9/dns-query"
+          "https://149.112.112.112/dns-query"
         ];
         fallback_dns = [
-          "https://dns.cloudflare.com/dns-query"
+          "9.9.9.9"
+          "1.1.1.1"
         ];
         bootstrap_dns = [
           "9.9.9.9"
           "1.1.1.1"
         ];
+        disable_ipv6 = true;
       };
 
       filtering = {
