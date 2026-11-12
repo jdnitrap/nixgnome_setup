@@ -11,4 +11,11 @@
     extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
     initialPassword = "changeme";
   };
+
+  users.users.John = {
+    isNormalUser = true;
+    description = "John";
+    uid = 1002;
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
+  };
 }

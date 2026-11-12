@@ -23,6 +23,8 @@
     ./modules/apparmor.nix
     ./modules/apparmor-gui.nix
     ./modules/adguard.nix
+    ./modules/dns-lock.nix
+    ./modules/system-filter.nix
   ];
 
   # Replace this after you clone the repo onto a machine.

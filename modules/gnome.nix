@@ -1,6 +1,6 @@
 #gnome.nix
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   services.xserver.enable = true;
@@ -16,78 +16,6 @@
   environment.gnome.excludePackages = with pkgs; [
     gnome-tour
     gnome-user-docs
-    gnome-shell-extensions
-  ];
-
-  # The Extensions command ships inside GNOME Shell. Refuse it for every account.
-  # Software and Settings stay in the app grid. Other system launchers are
-  # hidden, and their panels stay inside Settings.
-  environment.systemPackages = [
-    (lib.hiPrio (pkgs.runCommand "gnome-extensions-disabled" { } ''
-      mkdir -p $out/bin $out/share/dbus-1/services
-      cat > $out/bin/gnome-extensions-app <<'EOF'
-#!/bin/sh
-echo "The Extensions app is disabled." >&2
-exit 1
-EOF
-      chmod 0555 $out/bin/gnome-extensions-app
-      cat > $out/share/dbus-1/services/org.gnome.Extensions.service <<EOF
-[D-BUS Service]
-Name=org.gnome.Extensions
-Exec=$out/bin/gnome-extensions-app
-EOF
-    ''))
-
-    (lib.hiPrio (pkgs.runCommand "gnome-grid-software-only" {
-      paths = with pkgs; [
-        gnome-shell
-        gnome-control-center
-        gnome-software
-        gnome-color-manager
-        gnome-remote-desktop
-        gnome-browser-connector
-        gnome-initial-setup
-        gnome-bluetooth
-        gnome-keyring
-        gnome-settings-daemon
-        gnome-session
-        orca
-        ibus
-        rygel
-        xdg-user-dirs-gtk
-        system-config-printer
-        cups
-      ];
-    } ''
-      mkdir -p "$out/share/applications"
-      for p in $paths; do
-        dir="$p/share/applications"
-        [ -d "$dir" ] || continue
-        for f in "$dir"/*.desktop; do
-          [ -e "$f" ] || continue
-          base=$(basename "$f")
-          case "$base" in
-            org.gnome.Software.desktop|org.gnome.Settings.desktop) continue ;;
-          esac
-          # Settings loads gnome-*-panel.desktop by name. Hidden makes that
-          # lookup fail, so the row is dropped. NoDisplay only keeps the
-          # launcher out of the app grid.
-          if grep -q 'X-GNOME-Settings-Panel' "$f"; then
-            awk '
-              /^\[Desktop Entry\]/ { print; print "NoDisplay=true"; next }
-              /^NoDisplay=/ { next }
-              { print }
-            ' "$f" > "$out/share/applications/$base"
-          else
-            awk '
-              /^\[Desktop Entry\]/ { print; print "NoDisplay=true"; print "Hidden=true"; next }
-              /^NoDisplay=/ || /^Hidden=/ { next }
-              { print }
-            ' "$f" > "$out/share/applications/$base"
-          fi
-        done
-      done
-    ''))
   ];
 
   # GNOME hides Log Out with one account and one session. Show it anyway.
@@ -110,39 +38,4 @@ EOF
 
   # Terminal=true desktop files and GLib terminal launches use this instead of Console.
   xdg.terminal-exec.enable = true;
-
-  # GNOME Shell's wrapper puts its own share directory ahead of the system
-  # path, so the real Extensions launcher wins over a hidden copy there.
-  # A file in each user's data directory is checked first and removes it.
-  systemd.user.services.gnome-hide-launchers = {
-    description = "Hide system launchers from the GNOME app grid";
-    wantedBy = [ "graphical-session-pre.target" ];
-    before = [ "graphical-session-pre.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      dir="$HOME/.local/share/applications"
-      mkdir -p "$dir"
-      # An older generation replaced the Printers row with a Hidden stub.
-      rm -f "$dir/gnome-printers-panel.desktop"
-      # cups.desktop is the CUPS web icon. system-config-printer.desktop is
-      # the Print Settings app.
-      for name in \
-        org.gnome.Extensions.desktop \
-        org.gnome.Shell.Extensions.desktop \
-        cups.desktop \
-        system-config-printer.desktop \
-        xterm.desktop
-      do
-        cat > "$dir/$name" <<EOF
-      [Desktop Entry]
-      Type=Application
-      Hidden=true
-      NoDisplay=true
-      EOF
-      done
-    '';
-  };
 }
