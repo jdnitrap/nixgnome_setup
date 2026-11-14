@@ -25,6 +25,7 @@
     ./modules/adguard.nix
     ./modules/dns-lock.nix
     ./modules/system-filter.nix
+    ./modules/local-ai.nix
   ];
 
   # Replace this after you clone the repo onto a machine.
